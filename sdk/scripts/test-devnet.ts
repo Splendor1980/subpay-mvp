@@ -25,7 +25,7 @@ async function main() {
   console.log("2. Generating new wallet...");
   const keypair = Keypair.generate();
   const pubkey = keypair.publicKey;
-  console.log("   Public key:", pubkey.toBase58());
+  console.log("   Public key:", pubkey.toString());
   console.log("");
 
   // 3. Check balance
