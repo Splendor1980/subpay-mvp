@@ -2,8 +2,7 @@ import {
   PublicKey,
   TransactionBuilder,
   Instruction,
-  SystemProgram,
-  SYSVAR_CLOCK_PUBKEY,
+  SYSTEM_PROGRAM_ID,
 } from "@rialo/ts-cdk";
 
 // ──────────────────────────────────────────────
@@ -55,13 +54,6 @@ export function deriveSubscriptionPDA(
 // Instruction Builders
 // ──────────────────────────────────────────────
 
-/**
- * Build the CreateSubscription instruction.
- *
- * Flow:
- * 1. User calls SPL Token `Approve(delegate=PDA, amount=totalCap)`.
- * 2. User calls this instruction.
- */
 export function createCreateSubscriptionInstruction(
   user: PublicKey,
   merchant: PublicKey,
@@ -73,15 +65,11 @@ export function createCreateSubscriptionInstruction(
 ): Instruction {
   const [subPDA] = deriveSubscriptionPDA(user, merchant, mint, programId);
 
-  // Instruction discriminator (borsh enum index)
-  const discriminator = Buffer.alloc(1, 0); // 0 = CreateSubscription
-
-  // Serialize payload: amount (u64), interval (i64), max_payments (u64)
+  const discriminator = Buffer.alloc(1, 0);
   const payload = Buffer.alloc(24);
   payload.writeBigUInt64LE(amount, 0);
   payload.writeBigInt64LE(interval, 8);
   payload.writeBigUInt64LE(maxPayments, 16);
-
   const data = Buffer.concat([discriminator, payload]);
 
   return {
@@ -92,21 +80,17 @@ export function createCreateSubscriptionInstruction(
       { pubkey: subPDA, isSigner: false, isWritable: true },
       { pubkey: merchant, isSigner: false, isWritable: false },
       { pubkey: mint, isSigner: false, isWritable: false },
-      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+      { pubkey: SYSTEM_PROGRAM_ID, isSigner: false, isWritable: false },
     ],
   };
 }
 
-/**
- * Build the CancelSubscription instruction.
- */
 export function createCancelSubscriptionInstruction(
   user: PublicKey,
   subscriptionPDA: PublicKey,
   programId: PublicKey = SUBPAY_PROGRAM_ID,
 ): Instruction {
-  const discriminator = Buffer.alloc(1, 1); // 1 = CancelSubscription
-
+  const discriminator = Buffer.alloc(1, 1);
   return {
     programId,
     data: discriminator,
@@ -117,9 +101,6 @@ export function createCancelSubscriptionInstruction(
   };
 }
 
-/**
- * Build the ExecutePayment instruction (called by reactive tx).
- */
 export function createExecutePaymentInstruction(
   subscriptionPDA: PublicKey,
   userTokenAccount: PublicKey,
@@ -128,8 +109,7 @@ export function createExecutePaymentInstruction(
   tokenProgramId: PublicKey,
   programId: PublicKey = SUBPAY_PROGRAM_ID,
 ): Instruction {
-  const discriminator = Buffer.alloc(1, 2); // 2 = ExecutePayment
-
+  const discriminator = Buffer.alloc(1, 2);
   return {
     programId,
     data: discriminator,
@@ -143,10 +123,6 @@ export function createExecutePaymentInstruction(
   };
 }
 
-/**
- * Build a batch transaction containing CancelSubscription + Token Approve(0).
- * This atomically cancels the subscription AND revokes the delegate allowance.
- */
 export function createCancelAndRevokeTransaction(
   user: PublicKey,
   subscriptionPDA: PublicKey,
@@ -157,11 +133,10 @@ export function createCancelAndRevokeTransaction(
 ): TransactionBuilder {
   const cancelIx = createCancelSubscriptionInstruction(user, subscriptionPDA, programId);
 
-  // SPL Token Approve(delegate=PDA, amount=0) — revoke
   const [delegate] = deriveSubscriptionPDA(user, subscriptionPDA, mint, programId);
   const approveData = Buffer.alloc(9);
-  approveData.writeUInt8(4, 0);   // Approve instruction tag (SPL Token)
-  approveData.writeBigUInt64LE(BigInt(0), 1);  // amount = 0
+  approveData.writeUInt8(4, 0);
+  approveData.writeBigUInt64LE(BigInt(0), 1);
 
   const revokeIx: Instruction = {
     programId: tokenProgramId,
