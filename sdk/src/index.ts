@@ -21,7 +21,7 @@ export const SUBPAY_PROGRAM_ID = new PublicKey(
   ])
 );
 
-export const SUBPAY_SEED_PREFIX = Buffer.from("subpay");
+export const SUBPAY_SEED_PREFIX = new TextEncoder().encode("subpay");
 
 // ── Types ──
 
