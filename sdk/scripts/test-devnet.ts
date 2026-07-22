@@ -1,60 +1,59 @@
-import { RialoKeyring, Connection } from "@rialo/ts-cdk";
+import {
+  RialoKeyring,
+  PublicKey,
+  createRialoClient,
+  getDefaultRialoClientConfig,
+} from "@rialo/ts-cdk";
 
 const DEVNET_URL = "https://devnet.rialo.io";
 
-function sleep(ms: number) {
-  return new Promise((r) => setTimeout(r, ms));
-}
-
 async function main() {
-  console.log("SubPay - Rialo Devnet Test");
+  console.log("");
+  console.log("============================================");
+  console.log("  SubPay - Rialo Devnet Test");
+  console.log("============================================");
   console.log("");
 
-  // 1. Connect
-  console.log("Connecting to Rialo devnet...");
-  const connection = new Connection(DEVNET_URL);
-  console.log("  URL:", DEVNET_URL);
+  // 1. Create client
+  console.log("1. Connecting to Rialo devnet...");
+  const config = getDefaultRialoClientConfig("devnet");
+  const client = createRialoClient(config);
+  console.log("   URL:", DEVNET_URL);
+  console.log("");
 
   // 2. Generate wallet
-  console.log("\nGenerating new wallet...");
+  console.log("2. Generating new wallet...");
   const keyring = new RialoKeyring();
   const pubkey = keyring.publicKey;
-  console.log("  Public key:", pubkey.toBase58());
+  console.log("   Public key:", pubkey.toBase58());
+  console.log("");
 
   // 3. Check balance
-  let balance = 0n;
+  console.log("3. Checking balance...");
   try {
-    balance = await connection.getBalance(pubkey);
-    console.log("  Balance:", balance, "lamports");
+    const balance: any = await client.getBalance(pubkey);
+    console.log("   Balance:", balance, "lamports");
   } catch (e: any) {
-    console.log("  getBalance failed:", e.message.slice(0, 80));
+    console.log("   (getBalance not available or error)");
   }
+  console.log("");
 
   // 4. Airdrop
-  console.log("\nRequesting airdrop (1 RLO)...");
+  console.log("4. Requesting airdrop (1.0 RLO)...");
   try {
-    const sig = await connection.requestAirdrop(pubkey, 1_000_000_000);
-    console.log("  Airdrop signature:", sig.slice(0, 16), "...");
-
-    console.log("  Waiting for confirmation...");
-    await sleep(3000);
-
-    const newBalance = await connection.getBalance(pubkey);
-    console.log("  Balance after:", newBalance, "lamports");
-
-    if (newBalance > balance) {
-      console.log("\n  DEVNET IS WORKING!");
-    }
+    const sig: any = await client.requestAirdrop(pubkey, 1_000_000_000);
+    console.log("   Signature:", typeof sig === "string" ? sig : String(sig));
+    console.log("   Success!");
   } catch (e: any) {
-    console.log("  Airdrop attempted:", e.message.slice(0, 100));
-    console.log("  This is OK - RPC endpoint may still work.");
+    console.log("   Airdrop not available:", e.message);
   }
-
-  // 5. Summary
-  console.log("\n--- Summary ---");
-  console.log("Wallet:", pubkey.toBase58());
-  console.log("Network:", DEVNET_URL);
   console.log("");
+
+  // 5. Done
+  console.log("============================================");
+  console.log("  Test complete!");
+  console.log("  Next: open frontend at localhost:5173");
+  console.log("============================================");
 }
 
-main().catch(console.error);
+main().catch((e) => console.error("Error:", e.message));

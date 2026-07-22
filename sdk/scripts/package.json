@@ -1,9 +1,13 @@
 {
-  "name": "@subpay/devnet-test",
-  "private": true,
+  "name": "@subpay/scripts",
   "type": "module",
+  "scripts": {
+    "test": "npx tsx test-devnet.ts"
+  },
   "dependencies": {
-    "@rialo/ts-cdk": "^0.11.0",
-    "tsx": "^4.0.0"
+    "@rialo/ts-cdk": "^0.11.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0"
   }
 }
