@@ -2,7 +2,6 @@ pub mod errors;
 pub mod instructions;
 pub mod state;
 
-use borsh::BorshDeserialize;
 use rialo_s_program::{
     account_info::AccountInfo,
     entrypoint,
@@ -25,11 +24,13 @@ fn process_instruction(
             rialo_s_program::program_error::ProgramError::InvalidInstructionData
         })?;
     match instruction {
-        SubPayInstruction::CreateSubscription { amount, interval, max_payments } => {
-            instructions::process_create_subscription(program_id, accounts, amount, interval, max_payments)
+        SubPayInstruction::CreateStream { stream_type, amount, interval, max_total, cliff_time, end_time } => {
+            instructions::process_create_stream(
+                program_id, accounts, stream_type, amount, interval, max_total, cliff_time, end_time
+            )
         }
-        SubPayInstruction::CancelSubscription => {
-            instructions::process_cancel_subscription(program_id, accounts)
+        SubPayInstruction::CancelStream => {
+            instructions::process_cancel_stream(program_id, accounts)
         }
         SubPayInstruction::ExecutePayment => {
             instructions::process_execute_payment(program_id, accounts)
