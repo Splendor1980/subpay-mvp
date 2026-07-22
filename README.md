@@ -1,174 +1,109 @@
-# SubPay — Non-custodial Recurring Payments on Rialo
+# SubPay — Streaming & Vesting for RWA & DAO
 
-**SubPay** — платформа recurring payments на блокчейне Rialo.  
-Деньги всегда остаются в кошельке пользователя. Платежи выполняются автоматически
-через **Reactive Transactions** — без ботов, киперов и внешних сервисов.
+**SubPay** — некастодиальная платформа денежных потоков на Rialo.
+Управление recurring payments, streaming, vesting и RWA-выплатами
+в одном контракте. Без ботов и киперов — через Reactive Transactions.
+
+## Концепция
+
+Один контракт для всех денежных потоков:
+
+| Тип | Пример |
+|---|---|
+| **Recurring** | Ежемесячная подписка (10 USDC / мес) |
+| **Streaming** | Непрерывная зарплата контрибьюторам (0.00039 USDC / сек) |
+| **Vesting** | Распределение токенов команде (cliff 6 мес, vesting 24 мес) |
+| **RWA Dividends** | Выплата дивидендов держателям RWA |
+| **Treasury Stream** | Регулярные выплаты из DAO-сокровищницы (мультиподпись) |
+
+Все сценарии работают на одном механизме: **Reactive Transaction**.
+Predicate проверяется каждый блок — когда условие истинно, `ExecutePayment` срабатывает автоматически.
 
 ## Архитектура
 
 ```
 subpay-mvp/
-├── programs/subpay-core/          ← Rust-программа (SVM, RISC-V)
-│   ├── Cargo.toml
-│   └── src/
-│       ├── lib.rs                 ← entrypoint + dispatch
-│       ├── instructions.rs        ← CreateSubscription, CancelSubscription, ExecutePayment
-│       ├── state.rs               ← Subscription (PDA state)
-│       └── errors.rs              ← Error codes
-├── sdk/                           ← TypeScript SDK
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── src/index.ts               ← PDA derivation, instruction builders, batch helpers
-├── frontend/                      ← React + @rialo/frost
-│   ├── package.json
-│   ├── vite.config.ts
-│   ├── index.html
-│   └── src/
-│       ├── config.ts              ← Rialo devnet config
-│       ├── main.tsx               ← FrostProvider bootstrap
-│       ├── App.tsx                ← Routing: landing / create / dashboard
-│       └── components/
-│           ├── CreateSubscription.tsx   ← Approve + Subscribe flow
-│           └── SubscriptionList.tsx     ← Dashboard with cancel
-└── README.md
+├── programs/subpay-core/      ← Rust-программа (SVM, RISC-V)
+│   ├── lib.rs                 ← entrypoint
+│   ├── instructions.rs        ← CreateStream, CancelStream, ExecutePayment
+│   ├── state.rs               ← Stream (с StreamType), Subscription (deprecated)
+│   └── errors.rs
+├── sdk/                       ← TypeScript SDK
+├── frontend/                  ← React + @rialo/frost
+└── RWA/                       ← примеры RWA-сценариев (добавятся позже)
 ```
 
-## Поток работы (User Flow)
+## Stream типы (готовятся)
 
-### 1. Создание подписки
-
-| Шаг | Действие | Технически |
-|---|---|---|
-| **Approve** | Пользователь подписывает `Approve(delegate=PDA, amount=maxCap)` | SPL Token Approve |
-| **Create** | Подписывает `CreateSubscription { merchant, amount, interval, maxPayments }` | Программа создаёт PDA |
-| **Reactive** | Валидаторы проверяют predicate каждый блок | `is_due()` → `ExecutePayment` |
-
-### 2. Автоматический платёж (Reactive Transaction)
-
-```
-Каждый блок:
-  predicate = subscription.active
-           && subscription.payments_made < subscription.maxPayments
-           && block_time >= subscription.nextPaymentTime
-  если true → ExecutePayment
-              → CPI: Token::TransferChecked (delegate = PDA)
-              → subscription.payments_made++
-              → subscription.nextPaymentTime += interval
+```rust
+pub enum StreamType {
+    Subscription = 0,  // Классическая подписка (фикс. сумма, интервал)
+    Streaming    = 1,  // Непрерывный поток (rate * delta_time)
+    Vesting      = 2,  // Распределение (cliff + rate + cap + end)
+    RwaDividend  = 3,  // RWA-выплаты (dividend_per_share * shares)
+    Treasury     = 4,  // DAO-казначейство (multisig approval)
+}
 ```
 
-### 3. Отмена
+## Reactive Transactions
 
-`CancelSubscription` + `Token::Approve(PDA, 0)` в одной атомарной транзакции
-(через `TransactionBuilder.addInstruction` дважды).
-
-## Технические детали
-
-### Gas (Stake-for-Service)
-
-Rialo использует Stake-for-Service (SfS):
-- Пользователь создаёт SfS-позицию, направляя % стейкинг-дохода в ServicePaymaster
-- SPM mint'ит service credits → тратятся на газ reactive транзакций
-- Отдельный баланс для газа **не требуется**
-
-Подробно: [Stake for Service](https://rialo.io/posts/stake-for-service)
-
-### Reactive Transactions
-
-- **Predicate**: определяется при деплое — условие на on-chain данные
-- **Action**: ExecutePayment — вызывается, когда predicate истинен
-- **Execution**: детерминированная, внутри консенсуса, в конце блока
-- **Ошибки**: логируются в `status.err`. Рекомендуется retry-паттерн на уровне predicate
-  (проверять `allowance >= amount` прямо в predicate).
-
-Подробно: [Reactive Transactions](https://learn.rialo.io/tutorials/reactive/)
-
-### Безопасность (DKG / Threshold)
-
-На MVP не требуется. Кросс-чейн выплаты и мультиподпись для экстренного останова —
-в версии 2.0 с использованием DKG от Rialo.
-
-## Deploy-инструкция
-
-### 1. Rust-программа (subpay-core)
-
-```bash
-cd programs/subpay-core
-
-# Собрать
-cargo build-bpf --arch riscv64
-
-# Деплой на Rialo devnet
-rialo program deploy target/deploy/subpay-core.so \
-  --url https://devnet.rialo.io \
-  --keypair ~/subpay-keypair.json
-
-# Сохранить Program ID — он понадобится для фронтенда
-```
-
-> **Note**: `cargo build-bpf` доступен в Rialo SDK.
-> Установка: `cargo install rialo-cli`
-
-### 2. Настроить SDK
-
-```bash
-cd sdk
-npm install
-npm run build
-```
-
-Обновите `SUBPAY_PROGRAM_ID` в `src/index.ts` после деплоя программы.
-
-### 3. Запустить фронтенд
-
-```bash
-cd frontend
-npm install
-npm run dev
-# → http://localhost:5173
-```
-
-### 4. Reactive Transaction (один раз при старте)
-
-После деплоя программы зарегистрируйте reactive транзакцию
-через Rialo CLI или SDK:
+Predicate для каждого типа отличается, но исполнение — один `ExecutePayment`:
 
 ```
-# Predicate: subscription account data condition
-# Action: ExecutePayment instruction
-# Создаётся один раз — работает вечно
+Recurring:   paymentsMade < maxPayments && blockTime >= nextPaymentTime
+Streaming:   blockTime - lastStreamTime >= 1
+Vesting:     blockTime > cliffTime && totalStreamed < totalVested && blockTime < endTime
+RWA:         dividendRegistered && userHasShares && !alreadyPaidThisRound
+Treasury:    streamApproved && budgetRemaining > 0
 ```
 
-## Зависимости
+## Технический стек
 
 | Компонент | Технология |
 |---|---|
-| **Blockchain** | Rialo (SVM, RISC-V) |
-| **On-chain** | Rust + rialo-program + spl-token |
-| **Фронтенд** | React 18 + @rialo/frost 0.12 |
-| **SDK** | TypeScript + @rialo/ts-cdk 0.11 |
-| **Токен** | USDC (Rialo Interop) / RLO для тестов |
-| **Газ** | Stake-for-Service (ServicePaymaster) |
+| **Blockchain** | Rialo (SVM, RISC-V, 50ms блоки) |
+| **Gas** | Stake-for-Service (ServicePaymaster) |
+| **Автоматизация** | Reactive Transactions |
+| **Безопасность** | Threshold Cryptography / DKG (v2) |
+| **Фронтенд** | React + @rialo/frost |
+| **On-chain** | Rust + rialo-s-program |
+| **Токены** | USDC / RWA-токены (Rialo Interop) |
 
-## Roadmap
+## Дорожная карта
 
-### MVP (сейчас)
-- [x] Rust-программа: create, cancel, execute
-- [x] TypeScript SDK: PDA, инструкции, batch
-- [x] React UI: Approve + Subscribe, Dashboard
-- [ ] Аирдроп RLO на devnet для тестов
-- [ ] Деплой программы
-- [ ] Регистрация Reactive Transaction
+### MVP (сейчас — готово к деплою)
+- [x] Rust-программа: create/cancel/execute
+- [x] Reactive Transaction predicate для recurring
+- [x] TypeScript SDK
+- [x] React UI (Create + Dashboard)
+- [ ] Деплой на devnet + регистрация Reactive Transaction
 
-### Version 2
-- [ ] DKG для кросс-чейн выплат (через релеи)
-- [ ] Экстренный останов (multisig через Threshold)
-- [ ] Batch-выплаты мерчантам
-- [ ] Telegram/Discord-нотификации
+### Phase 2 (RWA + DAO)
+- [ ] StreamType: Subscription, Streaming, Vesting, RwaDividend
+- [ ] Интерфейс "One-click treasury stream"
+- [ ] Vesting schedule для DAO-токенов
+- [ ] RWA dividend distribution
+
+### Phase 3 (DeFi composability)
+- [ ] DKG для кросс-чейн выплат
+- [ ] Multisig treasury через Threshold Cryptography
+- [ ] Compliance для RWA (Rialo Compliance Primitive)
+- [ ] Интеграция с Rialo Stream (native data feeds)
+
+## Deploy
+
+```bash
+cd programs/subpay-core
+cargo build-bpf --arch riscv64
+rialo program deploy target/deploy/subpay-core.so \
+  --url https://devnet.rialo.io \
+  --keypair ~/subpay-keypair.json
+```
 
 ## Ссылки
 
-- [Rialo Learn](https://learn.rialo.io/) — интерактивные туториалы
+- [Rialo Learn](https://learn.rialo.io/)
 - [Reactive Transactions](https://learn.rialo.io/tutorials/reactive/)
-- [DKG](https://learn.rialo.io/tutorials/dkg/)
 - [Stake for Service](https://rialo.io/posts/stake-for-service)
-- [Rialo Dev Portal](https://www.rialo.io/for-devs)
+- [DKG](https://rialo.io/posts/understanding-distributed-key-generation)
+- [GitHub](https://github.com/Splendor1980/subpay-mvp)
