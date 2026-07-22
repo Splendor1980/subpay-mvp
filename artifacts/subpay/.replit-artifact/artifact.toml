@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "SubPay"
+version = "1.0.0"
+id = "artifacts/subpay"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23390
+
+[services.development]
+run = "pnpm --filter @workspace/subpay run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/subpay", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/subpay/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23390"
+BASE_PATH = "/"
