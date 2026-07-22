@@ -3,6 +3,7 @@ use rialo_s_program::pubkey::Pubkey;
 
 /// Type of payment stream.
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone, PartialEq)]
+#[borsh(use_discriminant = true)]
 pub enum StreamType {
     Subscription = 0,
     Streaming = 1,

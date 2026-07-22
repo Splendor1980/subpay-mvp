@@ -116,7 +116,7 @@ pub fn process_cancel_stream(
     let (pda, _) = Pubkey::find_program_address(&seeds, program_id);
     if stream_acc.key != &pda { return Err(ProgramError::InvalidAccountData); }
 
-    let mut s2 = s;
+    let mut s2 = s.clone();
     s2.active = false;
     let mut d = stream_acc.data.borrow_mut();
     s2.serialize(&mut &mut d[..])?;
@@ -146,7 +146,7 @@ pub fn process_execute_payment(
     if !s.is_due(clock.unix_timestamp) { return Err(SubPayError::TooSoon.into()); }
 
     let payment = {
-        let mut s2 = s;
+        let mut s2 = s.clone();
         let p = s2.advance(clock.unix_timestamp);
         let mut d = stream_acc.data.borrow_mut();
         s2.serialize(&mut &mut d[..])?;

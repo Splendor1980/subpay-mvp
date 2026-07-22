@@ -1,3 +1,4 @@
+use borsh::BorshDeserialize;
 pub mod errors;
 pub mod instructions;
 pub mod state;
