@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useActiveAccount } from "@rialo/frost";
 import { PublicKey } from "@rialo/ts-cdk";
-import { SUBPAY_PROGRAM_ID, deriveSubscriptionPDA } from "@/sdk/index";
 
 interface SubView {
   merchant: string;
@@ -19,14 +18,13 @@ export function SubscriptionList() {
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState<string | null>(null);
 
-  const publicKey = account?.address ? new PublicKey(account.address) : null;
+  // @ts-ignore
+  const addrStr: string | undefined = account?.address ?? account?.publicKey;
+  const publicKey = addrStr ? PublicKey.fromString(addrStr) : null;
 
   useEffect(() => {
     if (!publicKey) return;
     setLoading(true);
-
-    // For MVP: show demo subscriptions
-    // In production: query on-chain accounts via RialoClient
     setTimeout(() => {
       setSubs([
         {
@@ -50,12 +48,11 @@ export function SubscriptionList() {
       ]);
       setLoading(false);
     }, 500);
-  }, [publicKey?.toBase58()]);
+  }, [publicKey?.toString()]);
 
-  const handleCancel = (subPDA: string) => {
-    setCancelling(subPDA);
-    // In production: use useSignAndSendTransaction
-    setSubs((prev) => prev.map((s) => (s.pda === subPDA ? { ...s, active: false } : s)));
+  const handleCancel = (pda: string) => {
+    setCancelling(pda);
+    setSubs((prev) => prev.map((s) => (s.pda === pda ? { ...s, active: false } : s)));
     setCancelling(null);
   };
 
@@ -63,21 +60,23 @@ export function SubscriptionList() {
 
   return (
     <div>
-      <h2>My Subscriptions</h2>
-      {loading && <p>Loading...</p>}
-      <div style={{ display: "grid", gap: 12 }}>
+      <h2 className="text-lg font-semibold mb-4">My Subscriptions</h2>
+      {loading && <p className="text-muted-foreground text-sm">Loading…</p>}
+      <div className="grid gap-3">
         {subs.map((sub) => (
           <div key={sub.pda} style={{
-            padding: 16, border: "1px solid #e0e0e0", borderRadius: 8,
+            padding: 16, border: "1px solid var(--color-border)", borderRadius: 8,
             display: "flex", justifyContent: "space-between", alignItems: "center",
             opacity: sub.active ? 1 : 0.5,
           }}>
             <div>
               <strong>{sub.merchant}</strong>
-              <div style={{ fontSize: 13, color: "#666", marginTop: 4 }}>
+              <div style={{ fontSize: 13, color: "var(--color-muted-foreground)", marginTop: 4 }}>
                 {sub.amount} · Every {sub.interval} · {sub.payments} paid
               </div>
-              <div style={{ fontSize: 13, color: "#666" }}>Next: {sub.nextPayment}</div>
+              <div style={{ fontSize: 13, color: "var(--color-muted-foreground)" }}>
+                Next: {sub.nextPayment}
+              </div>
             </div>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               <span style={{
@@ -85,14 +84,13 @@ export function SubscriptionList() {
                 borderRadius: "50%", background: sub.active ? "#2ecc71" : "#999",
               }} />
               {sub.active && (
-                <button onClick={() => handleCancel(sub.pda)}
-                  disabled={cancelling === sub.pda}
+                <button onClick={() => handleCancel(sub.pda)} disabled={cancelling === sub.pda}
                   style={{
                     padding: "6px 12px", border: "1px solid #e74c3c",
                     borderRadius: 6, background: "transparent",
                     color: "#e74c3c", cursor: "pointer", fontSize: 13,
                   }}>
-                  {cancelling === sub.pda ? "..." : "Cancel"}
+                  {cancelling === sub.pda ? "…" : "Cancel"}
                 </button>
               )}
               {!sub.active && <span style={{ fontSize: 13, color: "#999" }}>Inactive</span>}

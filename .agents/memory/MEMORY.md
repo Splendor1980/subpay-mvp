@@ -1,0 +1,1 @@
+- [SubPay project](subpay-project.md) — blockchain subscription/vesting/streaming platform on Retium (Rialo) devnet; frontend-only Vite+React, no API server needed.
