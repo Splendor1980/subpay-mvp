@@ -23,7 +23,7 @@ async function main() {
 
   // 2. Generate wallet
   console.log("2. Generating new wallet...");
-  const keypair = new Keypair();
+  const keypair = Keypair.generate();
   const pubkey = keypair.publicKey;
   console.log("   Public key:", pubkey.toBase58());
   console.log("");
@@ -45,7 +45,7 @@ async function main() {
     console.log("   Signature:", typeof sig === "string" ? sig : String(sig));
     console.log("   Success!");
   } catch (e: any) {
-    console.log("   Airdrop:", e.message || "not available");
+    console.log("   Airdrop not available:", e.message);
   }
   console.log("");
 
