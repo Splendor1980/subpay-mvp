@@ -1,0 +1,18 @@
+{
+  "name": "@subpay/sdk",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@rialo/ts-cdk": "^0.11.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}
