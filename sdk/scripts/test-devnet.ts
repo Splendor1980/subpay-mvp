@@ -1,5 +1,5 @@
 import {
-  RialoKeyring,
+  Keypair,
   PublicKey,
   createRialoClient,
   getDefaultRialoClientConfig,
@@ -23,8 +23,8 @@ async function main() {
 
   // 2. Generate wallet
   console.log("2. Generating new wallet...");
-  const keyring = new RialoKeyring();
-  const pubkey = keyring.publicKey;
+  const keypair = new Keypair();
+  const pubkey = keypair.publicKey;
   console.log("   Public key:", pubkey.toBase58());
   console.log("");
 
@@ -34,7 +34,7 @@ async function main() {
     const balance: any = await client.getBalance(pubkey);
     console.log("   Balance:", balance, "lamports");
   } catch (e: any) {
-    console.log("   (getBalance not available or error)");
+    console.log("   (getBalance not available)");
   }
   console.log("");
 
@@ -45,7 +45,7 @@ async function main() {
     console.log("   Signature:", typeof sig === "string" ? sig : String(sig));
     console.log("   Success!");
   } catch (e: any) {
-    console.log("   Airdrop not available:", e.message);
+    console.log("   Airdrop:", e.message || "not available");
   }
   console.log("");
 
