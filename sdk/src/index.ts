@@ -5,20 +5,25 @@ import {
   SYSTEM_PROGRAM_ID,
 } from "@rialo/ts-cdk";
 
-// ──────────────────────────────────────────────
-// Constants
-// ──────────────────────────────────────────────
+// ── Constants ──
 
-/** Deploy this with your real program keypair. */
+/** 
+ * Temporary placeholder — replace with your real deployed Program ID.
+ * When deploying:    rialo program deploy ... 
+ * Then update this with:   new PublicKey(new Uint8Array(YOUR_PROGRAM_BYTES))
+ */
 export const SUBPAY_PROGRAM_ID = new PublicKey(
-  "Eus8teHEggQ8ibaMkMRyTwrKVK3i2ByfjRXi7KVycqte"
+  new Uint8Array([
+    0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+    0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10,
+    0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+    0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x20,
+  ])
 );
 
 export const SUBPAY_SEED_PREFIX = Buffer.from("subpay");
 
-// ──────────────────────────────────────────────
-// Types
-// ──────────────────────────────────────────────
+// ── Types ──
 
 export interface SubscriptionState {
   isInitialized: boolean;
@@ -34,9 +39,7 @@ export interface SubscriptionState {
   bump: number;
 }
 
-// ──────────────────────────────────────────────
-// PDA Derivation
-// ──────────────────────────────────────────────
+// ── PDA Derivation ──
 
 export function deriveSubscriptionPDA(
   user: PublicKey,
@@ -50,9 +53,7 @@ export function deriveSubscriptionPDA(
   );
 }
 
-// ──────────────────────────────────────────────
-// Instruction Builders
-// ──────────────────────────────────────────────
+// ── Instruction Builders ──
 
 export function createCreateSubscriptionInstruction(
   user: PublicKey,
@@ -64,7 +65,6 @@ export function createCreateSubscriptionInstruction(
   programId: PublicKey = SUBPAY_PROGRAM_ID,
 ): Instruction {
   const [subPDA] = deriveSubscriptionPDA(user, merchant, mint, programId);
-
   const discriminator = Buffer.alloc(1, 0);
   const payload = Buffer.alloc(24);
   payload.writeBigUInt64LE(amount, 0);
@@ -132,12 +132,10 @@ export function createCancelAndRevokeTransaction(
   programId: PublicKey = SUBPAY_PROGRAM_ID,
 ): TransactionBuilder {
   const cancelIx = createCancelSubscriptionInstruction(user, subscriptionPDA, programId);
-
   const [delegate] = deriveSubscriptionPDA(user, subscriptionPDA, mint, programId);
   const approveData = Buffer.alloc(9);
   approveData.writeUInt8(4, 0);
   approveData.writeBigUInt64LE(BigInt(0), 1);
-
   const revokeIx: Instruction = {
     programId: tokenProgramId,
     data: approveData,
@@ -147,7 +145,6 @@ export function createCancelAndRevokeTransaction(
       { pubkey: user, isSigner: true, isWritable: false },
     ],
   };
-
   return new TransactionBuilder()
     .addInstruction(cancelIx)
     .addInstruction(revokeIx);
