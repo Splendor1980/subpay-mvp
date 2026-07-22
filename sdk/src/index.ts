@@ -11,7 +11,7 @@ import {
 
 /** Deploy this with your real program keypair. */
 export const SUBPAY_PROGRAM_ID = new PublicKey(
-  "SubPay1111111111111111111111111111111111111"
+  "Eus8teHEggQ8ibaMkMRyTwrKVK3i2ByfjRXi7KVycqte"
 );
 
 export const SUBPAY_SEED_PREFIX = Buffer.from("subpay");
