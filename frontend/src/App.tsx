@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useIsConnected, ConnectButton } from "@rialo/frost";
-import { CreateSubscription } from "./components/CreateSubscription";
+import { CreateSubscription, type FormType } from "./components/CreateSubscription";
 import { SubscriptionList } from "./components/SubscriptionList";
 
 type View = "landing" | "create" | "dashboard";
@@ -8,12 +8,21 @@ type View = "landing" | "create" | "dashboard";
 export default function App() {
   const isConnected = useIsConnected();
   const [view, setView] = useState<View>("landing");
+  const [formType, setFormType] = useState<FormType>("subscription");
+
+  const openForm = (type: FormType) => {
+    setFormType(type);
+    setView("create");
+  };
 
   return (
     <div style={{ maxWidth: 960, margin: "0 auto", padding: "24px 16px", fontFamily: "system-ui, -apple-system, sans-serif" }}>
       {/* Header */}
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 40 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div
+          style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}
+          onClick={() => setView("landing")}
+        >
           <h1 style={{ margin: 0, fontSize: 26, fontWeight: 700 }}>SubPay</h1>
           <span style={{
             background: "#e8f0fe",
@@ -31,9 +40,8 @@ export default function App() {
       </header>
 
       {/* Landing (when not connected) */}
-      {!isConnected && (
+      {!isConnected && view === "landing" && (
         <>
-          {/* Hero */}
           <section style={{ textAlign: "center", padding: "48px 0 56px" }}>
             <h2 style={{ fontSize: 36, fontWeight: 700, margin: "0 0 16px", lineHeight: 1.2 }}>
               Non-custodial Recurring Payments<br />on Rialo
@@ -44,7 +52,7 @@ export default function App() {
               Rialo Reactive Transactions.
             </p>
             <button
-              onClick={() => setView("create")}
+              onClick={() => openForm("subscription")}
               style={{
                 padding: "14px 32px",
                 borderRadius: 10,
@@ -61,7 +69,6 @@ export default function App() {
             </button>
           </section>
 
-          {/* Feature cards */}
           <section style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
@@ -74,26 +81,37 @@ export default function App() {
                 desc: "Cliff + linear unlock schedules for teams and investors. Fully on-chain.",
                 badge: "Vesting",
                 color: "#4361ee",
+                type: "vesting" as FormType,
               },
               {
                 title: "Real-time Streaming",
-                desc: "Continuous salary or contributor payouts — rate x elapsed time every block.",
+                desc: "Continuous salary or contributor payouts — rate × elapsed time every block.",
                 badge: "Stream",
                 color: "#3a0ca3",
+                type: "stream" as FormType,
               },
               {
                 title: "Subscriptions",
                 desc: "Classic recurring payments. Approve once, pay automatically every interval.",
                 badge: "Recurring",
                 color: "#4895ef",
+                type: "subscription" as FormType,
               },
             ].map((f) => (
-              <div key={f.title} style={{
-                background: "#f8f9fc",
-                border: "1px solid #e8eaf0",
-                borderRadius: 14,
-                padding: "24px 20px",
-              }}>
+              <div
+                key={f.title}
+                onClick={() => openForm(f.type)}
+                style={{
+                  background: "#f8f9fc",
+                  border: "1px solid #e8eaf0",
+                  borderRadius: 14,
+                  padding: "24px 20px",
+                  cursor: "pointer",
+                  transition: "box-shadow 0.15s",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.08)")}
+                onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}
+              >
                 <div style={{
                   display: "inline-block",
                   background: f.color,
@@ -113,7 +131,6 @@ export default function App() {
             ))}
           </section>
 
-          {/* How it works */}
           <section style={{ marginBottom: 56 }}>
             <h3 style={{ textAlign: "center", fontSize: 22, marginBottom: 28 }}>How it works</h3>
             <div style={{
@@ -148,7 +165,6 @@ export default function App() {
             </div>
           </section>
 
-          {/* Banner */}
           <div style={{
             background: "linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%)",
             color: "#fff",
@@ -163,48 +179,86 @@ export default function App() {
         </>
       )}
 
-      {/* Connected views */}
-      {isConnected && (
+      {/* Connected views OR form opened from cards */}
+      {(isConnected || view === "create") && (
         <>
-          <nav style={{
-            display: "flex",
-            gap: 8,
-            marginBottom: 28,
-            borderBottom: "1px solid #e0e0e0",
-            paddingBottom: 10,
-          }}>
-            <button
-              onClick={() => setView("create")}
-              style={{
-                padding: "9px 18px",
-                border: "none",
-                background: view === "create" ? "#4361ee" : "transparent",
-                color: view === "create" ? "#fff" : "#333",
-                borderRadius: 8,
-                cursor: "pointer",
-                fontWeight: 500,
-              }}
-            >
-              + New Subscription
-            </button>
-            <button
-              onClick={() => setView("dashboard")}
-              style={{
-                padding: "9px 18px",
-                border: "none",
-                background: view === "dashboard" ? "#4361ee" : "transparent",
-                color: view === "dashboard" ? "#fff" : "#333",
-                borderRadius: 8,
-                cursor: "pointer",
-                fontWeight: 500,
-              }}
-            >
-              My Subscriptions
-            </button>
-          </nav>
-          {view === "create" && <CreateSubscription />}
-          {view === "dashboard" && <SubscriptionList />}
-          {(view === "landing" || !view) && <CreateSubscription />}
+          {isConnected && (
+            <nav style={{
+              display: "flex",
+              gap: 8,
+              marginBottom: 28,
+              borderBottom: "1px solid #e0e0e0",
+              paddingBottom: 10,
+              flexWrap: "wrap",
+            }}>
+              <button
+                onClick={() => openForm("vesting")}
+                style={{
+                  padding: "9px 16px",
+                  border: "none",
+                  background: view === "create" && formType === "vesting" ? "#4361ee" : "transparent",
+                  color: view === "create" && formType === "vesting" ? "#fff" : "#333",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  fontWeight: 500,
+                }}
+              >
+                Vesting
+              </button>
+              <button
+                onClick={() => openForm("stream")}
+                style={{
+                  padding: "9px 16px",
+                  border: "none",
+                  background: view === "create" && formType === "stream" ? "#4361ee" : "transparent",
+                  color: view === "create" && formType === "stream" ? "#fff" : "#333",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  fontWeight: 500,
+                }}
+              >
+                Stream
+              </button>
+              <button
+                onClick={() => openForm("subscription")}
+                style={{
+                  padding: "9px 16px",
+                  border: "none",
+                  background: view === "create" && formType === "subscription" ? "#4361ee" : "transparent",
+                  color: view === "create" && formType === "subscription" ? "#fff" : "#333",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  fontWeight: 500,
+                }}
+              >
+                Subscription
+              </button>
+              <button
+                onClick={() => setView("dashboard")}
+                style={{
+                  padding: "9px 16px",
+                  border: "none",
+                  background: view === "dashboard" ? "#4361ee" : "transparent",
+                  color: view === "dashboard" ? "#fff" : "#333",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  fontWeight: 500,
+                }}
+              >
+                My Streams
+              </button>
+            </nav>
+          )}
+
+          {!isConnected && view === "create" && (
+            <div style={{ marginBottom: 24, padding: 16, background: "#fff8e6", borderRadius: 8, fontSize: 14 }}>
+              Connect wallet (top right) to proceed with the demo flow.
+            </div>
+          )}
+
+          {view === "create" && <CreateSubscription type={formType} />}
+          {view === "dashboard" && isConnected && <SubscriptionList />}
+          {isConnected && view === "landing" && <CreateSubscription type={formType} />}
         </>
       )}
     </div>
