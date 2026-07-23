@@ -16,7 +16,7 @@ export default function App() {
   };
 
   return (
-    <div style={{ maxWidth: 960, margin: "0 auto", padding: "24px 16px", fontFamily: "system-ui, -apple-system, sans-serif" }}>
+    <div style={{ maxWidth: 960, margin: "0 auto", padding: "24px 16px 48px", fontFamily: "system-ui, -apple-system, sans-serif", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       {/* Header */}
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 40 }}>
         <div
@@ -39,6 +39,7 @@ export default function App() {
         <ConnectButton />
       </header>
 
+      <div style={{ flex: 1 }}>
       {/* Landing (when not connected) */}
       {!isConnected && view === "landing" && (
         <>
@@ -261,6 +262,34 @@ export default function App() {
           {isConnected && view === "landing" && <CreateSubscription type={formType} />}
         </>
       )}
+      </div>
+
+      {/* Footer */}
+      <footer style={{
+        marginTop: 48,
+        paddingTop: 24,
+        borderTop: "1px solid #e8eaf0",
+        textAlign: "center",
+        fontSize: 13,
+        color: "#888",
+        lineHeight: 1.7,
+      }}>
+        <div>
+          <a
+            href="https://github.com/Splendor1980/subpay-mvp"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "#4361ee", textDecoration: "none", fontWeight: 500 }}
+          >
+            Open source on GitHub
+          </a>
+          {" · "}
+          On-chain program in <strong style={{ color: "#555" }}>Rust</strong> for reliability and safety
+        </div>
+        <div style={{ marginTop: 4 }}>
+          Built on Rialo · Non-custodial payments
+        </div>
+      </footer>
     </div>
   );
 }
