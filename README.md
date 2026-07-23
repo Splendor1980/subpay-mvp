@@ -76,28 +76,53 @@ Treasury:    streamApproved && budgetRemaining > 0
 | **On-chain** | Rust + rialo-s-program |
 | **Токены** | USDC / RWA-токены (Rialo Interop) |
 
-## Дорожная карта
+## Текущая дорожная карта
 
-### MVP (сейчас)
-- [x] Rust-программа: create/cancel/execute
-- [x] Reactive Transaction predicate для recurring
+### Phase 0 — Foundation (закрыто)
+- [x] Rust-программа: CreateStream / CancelStream / ExecutePayment
+- [x] Reactive Transaction predicate (заготовка)
 - [x] TypeScript SDK (черновик)
-- [x] React UI — формы Vesting / Stream / Subscription + Dashboard
-- [x] Frontend задеплоен на Railway (demo mode)
-- [ ] Деплой программы на Rialo devnet + регистрация Reactive Transaction
-- [ ] Реальные on-chain вызовы вместо demo
+- [x] React UI — формы Vesting / Stream / Subscription
+- [x] Demo-режим (simulateTx)
+- [x] Frontend задеплоен на Railway
+- [x] Live Demo: https://subpay-mvp-production.up.railway.app/
+- [x] README + позиционирование
 
-### Phase 2 (RWA + DAO)
-- [ ] StreamType: Subscription, Streaming, Vesting, RwaDividend
-- [ ] Интерфейс "One-click treasury stream"
-- [ ] Vesting schedule для DAO-токенов
-- [ ] RWA dividend distribution
+### Phase 1 — Usable MVP (следующий приоритет)
+- [ ] Деплой `subpay-core` на Rialo devnet
+- [ ] Реальные on-chain вызовы через `@rialo/ts-cdk` (вместо demo)
+- [ ] Cliff + linear vesting полностью on-chain
+- [ ] Open-ended stream (зарплата без даты конца)
+- [ ] Cancel + clawback оставшихся токенов
+- [ ] Progress-бар (unlocked %)
+- [ ] Recipient view — «мои стримы / vesting’и»
+- [ ] Shareable link для получателя
 
-### Phase 3 (DeFi composability)
+### Phase 2 — Для команд
+- [ ] Batch create из CSV (до 20–50 адресов)
+- [ ] CEO-дашборд (все стримы, total committed, next unlocks)
+- [ ] Top-up stream
+- [ ] Pause / Resume
+- [ ] Несколько токенов (не только USDC)
+
+### Phase 3 — RWA + DAO
+- [ ] StreamType: RwaDividend, Treasury
+- [ ] 1-to-many distributions (дивиденды)
+- [ ] One-click treasury stream
+- [ ] Multisig / Threshold Cryptography
+- [ ] Governance rights while vesting
+
+### Phase 4 — Composability
 - [ ] DKG для кросс-чейн выплат
-- [ ] Multisig treasury через Threshold Cryptography
-- [ ] Compliance для RWA (Rialo Compliance Primitive)
+- [ ] Compliance Primitive (RWA)
 - [ ] Интеграция с Rialo Stream (native data feeds)
+- [ ] Price-based vesting (оракулы)
+
+## Почему Rialo — преимущество
+
+Конкуренты (Sablier, Superfluid, Streamflow, LlamaPay, Hedgey) на EVM/Solana зависят от keepers, bots или push-модели claim.
+
+SubPay использует **Reactive Transactions** — условие проверяется самим блокчейном. Нет внешних автоматизаторов. Это главный дифференциатор.
 
 ## Deploy
 
