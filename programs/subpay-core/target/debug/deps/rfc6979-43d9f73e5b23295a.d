@@ -1,0 +1,7 @@
+/workspaces/subpay-mvp/programs/subpay-core/target/debug/deps/rfc6979-43d9f73e5b23295a.d: /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rfc6979-0.4.0/src/lib.rs /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rfc6979-0.4.0/src/ct_cmp.rs /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rfc6979-0.4.0/src/../README.md
+
+/workspaces/subpay-mvp/programs/subpay-core/target/debug/deps/librfc6979-43d9f73e5b23295a.rmeta: /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rfc6979-0.4.0/src/lib.rs /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rfc6979-0.4.0/src/ct_cmp.rs /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rfc6979-0.4.0/src/../README.md
+
+/home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rfc6979-0.4.0/src/lib.rs:
+/home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rfc6979-0.4.0/src/ct_cmp.rs:
+/home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rfc6979-0.4.0/src/../README.md:
