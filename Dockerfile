@@ -4,15 +4,15 @@ WORKDIR /app
 
 RUN npm install -g pnpm
 
-COPY package*.json pnpm-lock.yaml* ./
-COPY pnpm-workspace.yaml* ./
+# Копируем из frontend
+COPY frontend/package.json frontend/pnpm-lock.yaml* ./
 
 RUN pnpm install --frozen-lockfile
 
-COPY . .
+COPY frontend/ ./
 
-RUN pnpm --filter @workspace/subpay build
+RUN pnpm build
 
 EXPOSE 3000
 
-CMD ["pnpm", "--filter", "@workspace/subpay", "serve"]
+CMD ["pnpm", "serve"]
