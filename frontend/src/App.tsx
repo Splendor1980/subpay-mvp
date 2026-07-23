@@ -72,17 +72,20 @@ export default function App() {
               {
                 title: "Token Vesting",
                 desc: "Cliff + linear unlock schedules for teams and investors. Fully on-chain.",
-                icon: "ð",
+                badge: "Vesting",
+                color: "#4361ee",
               },
               {
                 title: "Real-time Streaming",
-                desc: "Continuous salary or contributor payouts — rate Ã elapsed time every block.",
-                icon: "â¡",
+                desc: "Continuous salary or contributor payouts — rate x elapsed time every block.",
+                badge: "Stream",
+                color: "#3a0ca3",
               },
               {
                 title: "Subscriptions",
                 desc: "Classic recurring payments. Approve once, pay automatically every interval.",
-                icon: "ð",
+                badge: "Recurring",
+                color: "#4895ef",
               },
             ].map((f) => (
               <div key={f.title} style={{
@@ -91,7 +94,19 @@ export default function App() {
                 borderRadius: 14,
                 padding: "24px 20px",
               }}>
-                <div style={{ fontSize: 28, marginBottom: 12 }}>{f.icon}</div>
+                <div style={{
+                  display: "inline-block",
+                  background: f.color,
+                  color: "#fff",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  padding: "4px 10px",
+                  borderRadius: 6,
+                  marginBottom: 14,
+                  letterSpacing: 0.3,
+                }}>
+                  {f.badge}
+                </div>
                 <h3 style={{ margin: "0 0 8px", fontSize: 18 }}>{f.title}</h3>
                 <p style={{ margin: 0, color: "#666", fontSize: 14, lineHeight: 1.5 }}>{f.desc}</p>
               </div>
@@ -143,7 +158,7 @@ export default function App() {
             fontSize: 15,
             fontWeight: 500,
           }}>
-            Powered by Rialo Reactive Transactions Â· Stake-for-Service gas
+            Powered by Rialo Reactive Transactions · Stake-for-Service gas
           </div>
         </>
       )}
