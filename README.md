@@ -150,6 +150,7 @@ rialo program deploy target/deploy/subpay-core.so \
 ## Links
 
 - **Live Demo:** https://subpay-mvp-production.up.railway.app/
+- **Rialo Ecosystem Map:** [ECOSYSTEM.md](./ECOSYSTEM.md) — niches taken vs open
 - [Rialo Learn](https://learn.rialo.io/)
 - [Reactive Transactions](https://learn.rialo.io/tutorials/reactive/)
 - [Stake for Service](https://rialo.io/posts/stake-for-service)
