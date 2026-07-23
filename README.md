@@ -4,6 +4,12 @@
 Управление recurring payments, streaming, vesting и RWA-выплатами
 в одном контракте. Без ботов и киперов — через Reactive Transactions.
 
+## 🌐 Live Demo
+
+**https://subpay-mvp-production.up.railway.app/**
+
+Frontend уже работает (demo-режим). Подключай кошелёк и тестируй формы Vesting / Stream / Subscription.
+
 ## Концепция
 
 Один контракт для всех денежных потоков:
@@ -29,11 +35,11 @@ subpay-mvp/
 │   ├── state.rs               ← Stream (с StreamType), Subscription (deprecated)
 │   └── errors.rs
 ├── sdk/                       ← TypeScript SDK
-├── frontend/                  ← React + @rialo/frost
+├── frontend/                  ← React + @rialo/frost + Caddy (Railway)
 └── RWA/                       ← примеры RWA-сценариев (добавятся позже)
 ```
 
-## Stream типы (готовятся)
+## Stream типы
 
 ```rust
 pub enum StreamType {
@@ -66,17 +72,20 @@ Treasury:    streamApproved && budgetRemaining > 0
 | **Автоматизация** | Reactive Transactions |
 | **Безопасность** | Threshold Cryptography / DKG (v2) |
 | **Фронтенд** | React + @rialo/frost |
+| **Деплой frontend** | Railway + Docker + Caddy |
 | **On-chain** | Rust + rialo-s-program |
 | **Токены** | USDC / RWA-токены (Rialo Interop) |
 
 ## Дорожная карта
 
-### MVP (сейчас — готово к деплою)
+### MVP (сейчас)
 - [x] Rust-программа: create/cancel/execute
 - [x] Reactive Transaction predicate для recurring
-- [x] TypeScript SDK
-- [x] React UI (Create + Dashboard)
-- [ ] Деплой на devnet + регистрация Reactive Transaction
+- [x] TypeScript SDK (черновик)
+- [x] React UI — формы Vesting / Stream / Subscription + Dashboard
+- [x] Frontend задеплоен на Railway (demo mode)
+- [ ] Деплой программы на Rialo devnet + регистрация Reactive Transaction
+- [ ] Реальные on-chain вызовы вместо demo
 
 ### Phase 2 (RWA + DAO)
 - [ ] StreamType: Subscription, Streaming, Vesting, RwaDividend
@@ -92,6 +101,19 @@ Treasury:    streamApproved && budgetRemaining > 0
 
 ## Deploy
 
+### Frontend (уже работает)
+
+Live: **https://subpay-mvp-production.up.railway.app/**
+
+```bash
+# Локально
+cd frontend
+npm ci
+npm run dev
+```
+
+### On-chain программа
+
 ```bash
 cd programs/subpay-core
 cargo build-bpf --arch riscv64
@@ -102,6 +124,7 @@ rialo program deploy target/deploy/subpay-core.so \
 
 ## Ссылки
 
+- **Live Demo:** https://subpay-mvp-production.up.railway.app/
 - [Rialo Learn](https://learn.rialo.io/)
 - [Reactive Transactions](https://learn.rialo.io/tutorials/reactive/)
 - [Stake for Service](https://rialo.io/posts/stake-for-service)
