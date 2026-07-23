@@ -18,13 +18,16 @@ Last updated: 2026-07-23
 
 | Niche | Status | Project(s) | Notes |
 |-------|--------|------------|-------|
-| Streaming payments | **Building** | [SubPay](https://github.com/Splendor1980/subpay-mvp) | Real-time token streams |
-| Token vesting (cliff + linear) | **Building** | [SubPay](https://github.com/Splendor1980/subpay-mvp) | Team / investor schedules |
-| Recurring subscriptions | **Building** | [SubPay](https://github.com/Splendor1980/subpay-mvp) | Fixed interval + max payments |
-| Payroll / salary streams | **Open** | — | Natural fit for Reactive Transactions |
+| **Non-custodial cash-flow platform** (streaming, vesting, subscriptions) | **Building** | [SubPay](https://github.com/Splendor1980/subpay-mvp) | Unified payments system for recurring, continuous, and scheduled token flows. No custody — approve + Reactive execution. |
+| Streaming payments (by the second / continuous) | covered by SubPay | ↑ | Real-time rate × time |
+| Token vesting (cliff + linear) | covered by SubPay | ↑ | Team / investor unlock schedules |
+| Recurring subscriptions | covered by SubPay | ↑ | Fixed amount + interval + max payments |
+| Payroll / salary streams | **Open** (adjacent) | — | Can be built on top of SubPay streams or as a dedicated product |
 | Invoice / pay-on-delivery | **Open** | — | Combine with real-world data feeds |
 
-**Live demo (SubPay frontend):** https://subpay-mvp-production.up.railway.app/
+**SubPay in one line:** non-custodial payments system on Rialo for streaming, vesting, and subscriptions — automated via Reactive Transactions, without keepers or custody.
+
+**Live demo:** https://subpay-mvp-production.up.railway.app/
 
 ---
 
@@ -49,7 +52,7 @@ Playground: https://playground.rialo.io/
 |-------|--------|------------|-------|
 | RWA issuance / servicing | **Open** | — | Rialo enterprise track exists |
 | RWA dividends / distributions | **Open** | — | Fits 1-to-many Reactive flows |
-| Cap table / investor lockups | **Open** | — | Adjacent to vesting |
+| Cap table / investor lockups | **Open** | — | Adjacent to SubPay vesting |
 | Compliance-native assets | **Demo** | Meridian-related | |
 
 ---
@@ -82,7 +85,7 @@ Playground: https://playground.rialo.io/
 
 High fit for Rialo’s Reactive Transactions + real-world data:
 
-1. **On-chain payroll** — salary streams with auto top-up / revoke  
+1. **On-chain payroll** — salary streams with auto top-up / revoke (can extend SubPay)  
 2. **Parametric insurance** — pay out when external condition is true  
 3. **RWA dividend distributor** — 1-to-many on schedule or event  
 4. **Treasury automation for DAOs** — recurring + multisig gates  
