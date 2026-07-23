@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import { useActiveAccount } from "@rialo/frost";
-import { PublicKey } from "@rialo/ts-cdk";
-import { SUBPAY_PROGRAM_ID, deriveSubscriptionPDA } from "../../../sdk/src/index";
 
 interface SubView {
   merchant: string;
@@ -19,14 +17,13 @@ export function SubscriptionList() {
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState<string | null>(null);
 
-  const publicKey = account?.address ? new PublicKey(account.address) : null;
+  const isConnected = Boolean(account?.publicKey || account?.address);
 
   useEffect(() => {
-    if (!publicKey) return;
+    if (!isConnected) return;
     setLoading(true);
 
-    // For MVP: show demo subscriptions
-    // In production: query on-chain accounts via RialoClient
+    // MVP demo data. Production: query on-chain accounts via RialoClient.
     setTimeout(() => {
       setSubs([
         {
@@ -50,16 +47,17 @@ export function SubscriptionList() {
       ]);
       setLoading(false);
     }, 500);
-  }, [publicKey]);
+  }, [isConnected]);
 
   const handleCancel = (subPDA: string) => {
     setCancelling(subPDA);
-    // In production: use useSignAndSendTransaction
-    setSubs((prev) => prev.map((s) => (s.pda === subPDA ? { ...s, active: false } : s)));
+    setSubs((prev) =>
+      prev.map((s) => (s.pda === subPDA ? { ...s, active: false } : s))
+    );
     setCancelling(null);
   };
 
-  if (!publicKey) return null;
+  if (!isConnected) return null;
 
   return (
     <div>
@@ -67,11 +65,18 @@ export function SubscriptionList() {
       {loading && <p>Loading...</p>}
       <div style={{ display: "grid", gap: 12 }}>
         {subs.map((sub) => (
-          <div key={sub.pda} style={{
-            padding: 16, border: "1px solid #e0e0e0", borderRadius: 8,
-            display: "flex", justifyContent: "space-between", alignItems: "center",
-            opacity: sub.active ? 1 : 0.5,
-          }}>
+          <div
+            key={sub.pda}
+            style={{
+              padding: 16,
+              border: "1px solid #e0e0e0",
+              borderRadius: 8,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              opacity: sub.active ? 1 : 0.5,
+            }}
+          >
             <div>
               <strong>{sub.merchant}</strong>
               <div style={{ fontSize: 13, color: "#666", marginTop: 4 }}>
@@ -80,22 +85,35 @@ export function SubscriptionList() {
               <div style={{ fontSize: 13, color: "#666" }}>Next: {sub.nextPayment}</div>
             </div>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <span style={{
-                display: "inline-block", width: 10, height: 10,
-                borderRadius: "50%", background: sub.active ? "#2ecc71" : "#999",
-              }} />
+              <span
+                style={{
+                  display: "inline-block",
+                  width: 10,
+                  height: 10,
+                  borderRadius: "50%",
+                  background: sub.active ? "#2ecc71" : "#999",
+                }}
+              />
               {sub.active && (
-                <button onClick={() => handleCancel(sub.pda)}
+                <button
+                  onClick={() => handleCancel(sub.pda)}
                   disabled={cancelling === sub.pda}
                   style={{
-                    padding: "6px 12px", border: "1px solid #e74c3c",
-                    borderRadius: 6, background: "transparent",
-                    color: "#e74c3c", cursor: "pointer", fontSize: 13,
-                  }}>
+                    padding: "6px 12px",
+                    border: "1px solid #e74c3c",
+                    borderRadius: 6,
+                    background: "transparent",
+                    color: "#e74c3c",
+                    cursor: "pointer",
+                    fontSize: 13,
+                  }}
+                >
                   {cancelling === sub.pda ? "..." : "Cancel"}
                 </button>
               )}
-              {!sub.active && <span style={{ fontSize: 13, color: "#999" }}>Inactive</span>}
+              {!sub.active && (
+                <span style={{ fontSize: 13, color: "#999" }}>Inactive</span>
+              )}
             </div>
           </div>
         ))}
